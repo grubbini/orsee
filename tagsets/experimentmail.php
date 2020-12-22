@@ -666,6 +666,11 @@ function experimentmail__get_invitation_mail_details($part,$exp,$slist) {
     $part['public_experiment_note']=$exp['public_experiment_note'];
     $part['ethics_by']=$exp['ethics_by'];
     $part['ethics_number']=$exp['ethics_number'];
+    $part['showup_fee']=$exp['showup_fee'];
+    $part['range_bottom']=$exp['range_bottom'];
+    $part['range_top']=$exp['range_top'];
+    $part['contact_email']=$exp['contact_email'];
+    $part['contact_name']=$exp['contact_name'];    
     return $part;
 }
 
