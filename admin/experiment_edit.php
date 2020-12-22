@@ -49,6 +49,26 @@ if ($proceed) {
             message(lang('error_you_have_to_give_internal_name'));
                 $continue=false;
         }
+	
+	if (!$_REQUEST['ethics_number']) {
+            message(lang('error_you_have_to_give_ethics_number'));
+                $continue=false;
+        }
+	
+	if (!$_REQUEST['contact_name']) {
+            message(lang('error_you_have_to_give_contact_name'));
+                $continue=false;
+        }
+
+        if (!$_REQUEST['contact_email']) {
+            message(lang('error_you_have_to_give_contact_email'));
+                $continue=false;
+        }
+
+        if (!preg_match("/^[^@ \t\r\n]+@[-_0-9a-zA-Z]+\.[^@ \t\r\n]+$/",$_REQUEST['contact_email'])) {
+             message(lang('error_no_valid_contact_email'));
+                $continue=false;
+        }
 
         if ($settings['enable_editing_of_experiment_sender_email']=='y' && check_allow('experiment_change_sender_address')) {
             if (!preg_match("/^[^@ \t\r\n]+@[-_0-9a-zA-Z]+\.[^@ \t\r\n]+$/",$_REQUEST['sender_mail'])) {
@@ -116,7 +136,8 @@ if ($proceed) {
                 'experiment_id','sender_mail','experiment_show_type','access_restricted',
                 'experiment_finished','hide_in_stats','hide_in_cal',
                 'ethics_by','ethics_number','ethics_exempt','ethics_expire_date',
-                'payment_types','payment_budgets');
+                'payment_types','payment_budgets', 'showup_fee', 'range_top', 'range_bottom', 
+		'contact_name', 'contact_email');
         foreach ($formvarnames as $fvn) {
             if (!isset($edit[$fvn])) $edit[$fvn]="";
         }
@@ -155,7 +176,7 @@ if ($proceed) {
 
     echo '      <TR>
                 <TD>'.lang('internal_description').':</TD>
-                <TD><textarea name=experiment_description rows=3 cols=30
+                <TD><textarea name=experiment_description rows=3 cols=35
                     wrap=virtual>'.stripslashes($edit['experiment_description']).'</textarea></TD>
             </TR>';
 
@@ -163,7 +184,7 @@ if ($proceed) {
         echo '  <TR>
                 <TD valign="top">'.lang('public_experiment_note').'<br><font class="small">'.
                     lang('public_experiment_note_note').'</font>:</TD>
-                <TD><textarea name="public_experiment_note" rows=3 cols=30 wrap=virtual>'.
+                <TD><textarea name="public_experiment_note" rows=3 cols=35 wrap=virtual>'.
                     $edit['public_experiment_note'].'</textarea></TD>
             </TR>';
     }
@@ -188,7 +209,8 @@ if ($proceed) {
             </TR>';
 
     echo '          <TR>
-                                <TD>'.lang('class').':</TD>
+                                <TD valign="top">'.lang('class').'<br><font class="small">'.
+					lang('class_note_note').'</font>:</TD>
                                 <TD valign="top">';
     echo experiment__experiment_class_select_field('experiment_class',
                         db_string_to_id_array($edit['experiment_class']));
@@ -236,21 +258,28 @@ if ($proceed) {
                     if ($edit['sender_mail']) echo stripslashes($edit['sender_mail']);
                         else echo $settings['support_mail'];
                     echo '"></TD>
-            </TR>';
-
-    }
-
-
+            </TR>';   
+ }
     if ($settings['enable_ethics_approval_module']=='y' && check_allow('experiment_edit_ethics_approval_details')) {
-    echo '      <TR>
-                <TD colspan="2">
-                    <TABLE width="100%" border=0>
-                        <TR><TD rowspan="2" valign="top">'.lang('human_subjects_ethics_approval').':</TD>
-                        <TD>'.lang('ethics_by').'<INPUT name="ethics_by" type="text" size=20 maxlength=60
+	  
+        echo '      <TR>
+			<TD>'.lang('ethics_by').'</TD>
+			<TD><INPUT name="ethics_by" type="text" size=40 maxlength=30
                                     value="'.$edit['ethics_by'].'"></TD>
-                        <TD>'.lang('ethics_number').'<INPUT name="ethics_number" type="text" size=10 maxlength=50
+                    </TR>';
+
+	echo '      <TR>
+                        <TD>'.lang('ethics_number').'</TD>
+			<TD><INPUT name="ethics_number" type="text" size=40 maxlength=20
                                     value="'.$edit['ethics_number'].'"></TD>
-                        </TR><TR>
+                    </TR>';
+
+    echo '
+                <TR>
+		<TD>'.lang('ethics_expiration').'&nbsp;&nbsp </TD>  
+			<TD colspan="2">
+                    <TABLE width="100%" border=0>
+                        <TR>
                             <TD colspan="2"><INPUT name="ethics_exempt" type="radio" value="y"';
 
     if ($edit['ethics_exempt']=='y') echo ' CHECKED';
@@ -265,7 +294,45 @@ if ($proceed) {
                     </TD>
             </TR>';
 
+
+
+#    echo '      
+#		<TR>
+#                <TD colspan="2">
+#                    <TABLE width="100%" border=0>
+#                        <TR><TD rowspan="2" valign="top">'.lang('human_subjects_ethics_approval').':</TD>
+#                        <TD>'.lang('ethics_by').'<INPUT name="ethics_by" type="text" size=20 maxlength=60
+#                                    value="'.$edit['ethics_by'].'"></TD>
+#                        <TD>'.lang('ethics_number').'<INPUT name="ethics_number" type="text" size=10 maxlength=50
+#                                    value="'.$edit['ethics_number'].'"></TD>
+#                        </TR><TR>
+#                            <TD colspan="2"><INPUT name="ethics_exempt" type="radio" value="y"';
+#
+#    if ($edit['ethics_exempt']=='y') echo ' CHECKED';
+#    echo '>'.lang('ethics_exempt_or').'&nbsp;<INPUT name="ethics_exempt" type="radio" value="n"';
+#    if($edit['ethics_exempt']!='y') echo ' CHECKED';
+#    echo '>'.lang('ethics_expires_on').'&nbsp;&nbsp;';
+#    echo formhelpers__pick_date('ethics_expire_date',$edit['ethics_expire_date'],$settings['session_start_years_backward'],$settings['session_start_years_forward']);
+#
+#   echo '          </TD>
+#                        </TR>
+#                    </TABLE>
+#                    </TD>
+#           </TR>';
+
     }
+
+    echo '      <TR>
+                <TD>'.lang('contact_name').'</TD>
+                <TD><INPUT name="contact_name" type="text" size=40 maxlength=40
+                                    value="'.$edit['contact_name'].'"></TD>
+                </TR>';
+    echo '      <TR>
+                <TD>'.lang('contact_email').'</TD>
+                <TD><INPUT name="contact_email" type="text" size=40 maxlength=40
+                                    value="'.$edit['contact_email'].'"></TD>
+                </TR>';
+
 
     if ($settings['enable_payment_module']=='y' ) {
         $payment_types=payments__load_paytypes();
@@ -293,6 +360,21 @@ if ($proceed) {
             }
     }
 
+    echo '      <TR>
+                <TD>'.lang('showup_fee').'</TD>
+                <TD><INPUT name="showup_fee" type="text" size=25 maxlength=5
+                                    value="'.$edit['showup_fee'].'"></TD>
+                </TR>';
+    echo '      <TR>
+                <TD>'.lang('range_bottom').'</TD>
+                <TD><INPUT name="range_bottom" type="text" size=25 maxlength=5
+                                    value="'.$edit['range_bottom'].'"></TD>
+                </TR>';
+    echo '      <TR>
+                <TD>'.lang('range_top').'</TD>
+                <TD><INPUT name="range_top" type="text" size=25 maxlength=5
+                                    value="'.$edit['range_top'].'"></TD>
+                </TR>';
 
     echo '      <TR>
                 <TD>'.lang('experiment_finished?').'</TD>
